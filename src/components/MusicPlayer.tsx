@@ -1,55 +1,104 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Music, Volume2, VolumeX, Heart, ExternalLink } from 'lucide-react';
+import { Music, Volume2, VolumeX, Heart, ExternalLink, SkipForward, Radio } from 'lucide-react';
 import { STORY_CONFIG } from '../config';
 import { sounds } from '../utils/sound';
+import { romanticSynth } from '../utils/romanticSynth';
 
 export const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [usingSynthFallback, setUsingSynthFallback] = useState(false);
   const [showSpotifyModal, setShowSpotifyModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  useEffect(() => {
-    // Lazy Audio init
-    const audio = new Audio(STORY_CONFIG.audioTrackUrl);
+  const tracks = STORY_CONFIG.romanticTracks || [
+    { title: "Chopin - Nocturne Op. 9 No. 2", url: STORY_CONFIG.audioTrackUrl }
+  ];
+
+  const playCurrentTrack = async (index: number) => {
+    // Stop synth if running
+    romanticSynth.stop();
+    setUsingSynthFallback(false);
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    const track = tracks[index];
+    if (!track) return;
+
+    const audio = new Audio(track.url);
     audio.loop = true;
     audio.volume = 0.35;
     audioRef.current = audio;
 
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      // If MP3 fails to play (CORS/Network/Format issue), try next track or synth fallback
+      if (index + 1 < tracks.length) {
+        setCurrentTrackIndex(index + 1);
+        playCurrentTrack(index + 1);
+      } else {
+        // Fallback to Web Audio romantic synth
+        setUsingSynthFallback(true);
+        romanticSynth.start();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  useEffect(() => {
     // Start on first user interaction if not playing
     const handleFirstInteraction = () => {
-      if (audioRef.current && !isPlaying) {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch(() => {});
+      if (!isPlaying) {
+        playCurrentTrack(0);
       }
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
     };
 
     window.addEventListener('click', handleFirstInteraction);
     window.addEventListener('keydown', handleFirstInteraction);
+    window.addEventListener('touchstart', handleFirstInteraction);
 
     return () => {
       window.removeEventListener('click', handleFirstInteraction);
       window.removeEventListener('keydown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      romanticSynth.stop();
     };
   }, []);
 
   const togglePlay = () => {
     sounds.playSparkle();
-    if (!audioRef.current) return;
     if (isPlaying) {
-      audioRef.current.pause();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      romanticSynth.stop();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().then(() => {
+      if (usingSynthFallback) {
+        romanticSynth.start();
         setIsPlaying(true);
-      }).catch(() => {});
+      } else {
+        playCurrentTrack(currentTrackIndex);
+      }
     }
+  };
+
+  const nextTrack = () => {
+    sounds.playSparkle();
+    const nextIdx = (currentTrackIndex + 1) % tracks.length;
+    setCurrentTrackIndex(nextIdx);
+    playCurrentTrack(nextIdx);
   };
 
   const toggleMute = () => {
@@ -57,6 +106,11 @@ export const MusicPlayer: React.FC = () => {
     setIsMuted(muted);
     if (audioRef.current) {
       audioRef.current.muted = muted;
+    }
+    if (muted) {
+      romanticSynth.setVolume(0);
+    } else {
+      romanticSynth.setVolume(0.25);
     }
   };
 
@@ -83,6 +137,14 @@ export const MusicPlayer: React.FC = () => {
         </button>
 
         <button
+          onClick={nextTrack}
+          className="interactive glass-button p-2.5 rounded-full text-[#E75480] hover:text-[#444444]"
+          title="Next Romantic Song"
+        >
+          <SkipForward className="w-4 h-4" />
+        </button>
+
+        <button
           onClick={toggleMute}
           className="interactive glass-button p-2.5 rounded-full text-[#E75480] hover:text-[#444444]"
           title={isMuted ? "Unmute Sound Effects" : "Mute Sound Effects"}
@@ -96,13 +158,13 @@ export const MusicPlayer: React.FC = () => {
             setShowSpotifyModal(true);
           }}
           className="interactive glass-button p-2.5 rounded-full text-[#E75480] hover:text-[#444444]"
-          title="Our Spotify Soundtrack"
+          title="Our Soundtrack & Playlist"
         >
           <Heart className="w-4 h-4 fill-[#E75480]" />
         </button>
       </div>
 
-      {/* Spotify Playlist Modal */}
+      {/* Spotify & Romantic Soundtrack Modal */}
       {showSpotifyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
           <div className="relative glass-panel rounded-3xl p-6 max-w-md w-full border border-white/80 shadow-2xl animate-float">
@@ -114,12 +176,60 @@ export const MusicPlayer: React.FC = () => {
             </button>
 
             <div className="text-center mb-4">
-              <span className="font-title text-3xl text-[#E75480] block">Our Love Song</span>
+              <span className="font-title text-3xl text-[#E75480] block">Our Love Songs</span>
               <p className="text-xs text-[#666666] font-body mt-1">
-                A special track dedicated to Siddikuna & Maha ❤️
+                Special smooth romantic music dedicated to Siddikuna & Maha ❤️
               </p>
             </div>
 
+            {/* Select Local Romantic Track */}
+            <div className="mb-4 bg-white/60 backdrop-blur-sm rounded-2xl p-3 border border-[#FFD6E8]">
+              <span className="text-xs font-semibold text-[#88586B] block mb-2 flex items-center gap-1.5">
+                <Radio className="w-3.5 h-3.5 text-[#E75480]" /> Select Background Music:
+              </span>
+              <div className="space-y-1.5">
+                {tracks.map((t, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setCurrentTrackIndex(i);
+                      playCurrentTrack(i);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors ${
+                      currentTrackIndex === i && isPlaying && !usingSynthFallback
+                        ? "bg-[#E75480] text-white font-medium"
+                        : "bg-white/80 text-[#444444] hover:bg-[#FFD6E8]/50"
+                    }`}
+                  >
+                    <span className="truncate">{t.title}</span>
+                    {currentTrackIndex === i && isPlaying && !usingSynthFallback && (
+                      <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">Playing</span>
+                    )}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => {
+                    if (audioRef.current) audioRef.current.pause();
+                    setUsingSynthFallback(true);
+                    romanticSynth.start();
+                    setIsPlaying(true);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors ${
+                    usingSynthFallback && isPlaying
+                      ? "bg-[#E75480] text-white font-medium"
+                      : "bg-white/80 text-[#444444] hover:bg-[#FFD6E8]/50"
+                  }`}
+                >
+                  <span className="truncate">✨ Ambient Soft Romantic Piano Synth</span>
+                  {usingSynthFallback && isPlaying && (
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">Active</span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Spotify Embed */}
             <div className="rounded-2xl overflow-hidden shadow-md my-4 border border-[#FFD6E8]">
               <iframe
                 src={STORY_CONFIG.spotifyUrl.includes('/embed/') ? STORY_CONFIG.spotifyUrl : STORY_CONFIG.spotifyUrl.replace('open.spotify.com/', 'open.spotify.com/embed/')}
@@ -146,3 +256,4 @@ export const MusicPlayer: React.FC = () => {
     </>
   );
 };
+
