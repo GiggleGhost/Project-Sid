@@ -86,6 +86,14 @@ export default function App() {
 
   return (
     <div className={`min-h-screen relative transition-colors duration-1000 ${getBgStyle()}`}>
+      {/* Small Protective Evil Eye Emoji in Top Left Corner */}
+      <div 
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-white/80 backdrop-blur-md rounded-full shadow-md border border-pink-200/80 hover:scale-110 transition-transform duration-300 pointer-events-auto select-none cursor-pointer"
+        title="Evil Eye Protection 🧿"
+      >
+        <span className="text-lg sm:text-xl leading-none">🧿</span>
+      </div>
+
       {/* Ambient Canvas Effects (Petals, Sparkles, Fireflies, Fireworks) */}
       <AmbientCanvas chapter={currentChapter} fireworksActive={fireworksActive} />
 
