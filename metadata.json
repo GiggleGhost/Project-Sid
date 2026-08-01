@@ -1,0 +1,6 @@
+{
+  "name": "Project Sid",
+  "description": "An immersive, cinematic interactive love story and Girlfriend's Day gift for Sid.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
