@@ -63,8 +63,9 @@ export const STORY_CONFIG = {
 
   // Audio Configuration
   spotifyUrl: "https://open.spotify.com/track/1mEpeKvjH9T6acliz2GI3D?si=05aae00974d14737", // Customizable track/playlist
-  audioTrackUrl: "https://upload.wikimedia.org/wikipedia/commons/2/21/Chopin_-_Nocturne_Op_9_No_2_E_flat_major.mp3", // Smooth Romantic Piano (Chopin)
+  audioTrackUrl: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3", // Romantic Soft Instrumental Piano (Original BGM)
   romanticTracks: [
+    { title: "Romantic Piano (Original BGM)", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3" },
     { title: "Chopin - Nocturne Op. 9 No. 2", url: "https://upload.wikimedia.org/wikipedia/commons/2/21/Chopin_-_Nocturne_Op_9_No_2_E_flat_major.mp3" },
     { title: "Debussy - Clair de Lune", url: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Debussy_-_Clair_de_lune_%28performed_by_Laurens_Goedhart%29.mp3" },
     { title: "Pachelbel - Canon in D (Acoustic Guitar)", url: "https://upload.wikimedia.org/wikipedia/commons/b/b5/Canon_in_D_major_Pachelbel_Guitar.mp3" }

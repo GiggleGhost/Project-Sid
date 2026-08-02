@@ -19,16 +19,18 @@ const GalleryVideoPlayer: React.FC<{
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = true;
-      videoRef.current.play().catch(() => {});
+      videoRef.current.play().catch(() => {
+        // Autoplay prevented or failed
+      });
     }
   }, [src, isModal, isDrive]);
 
-  // If it's a Google Drive video or direct native video failed, use Google's native HD Preview Iframe
-  if ((isDrive || loadError) && iframeSrc) {
+  // If it's an iframe embed (Google Drive, YouTube) or failed native video with iframe fallback
+  if ((isDrive || (loadError && iframeSrc)) && iframeSrc) {
     return (
       <div className="relative w-full h-full overflow-hidden bg-black flex items-center justify-center">
         <iframe
-          src={`${iframeSrc}?autoplay=1`}
+          src={`${iframeSrc}${iframeSrc.includes('?') ? '&' : '?'}autoplay=1`}
           className="w-full h-full border-0 rounded-xl"
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
@@ -42,6 +44,25 @@ const GalleryVideoPlayer: React.FC<{
     );
   }
 
+  // If native MP4 file failed to load (e.g. 404 on hosted Vercel site because mp4 was not uploaded/committed)
+  if (loadError) {
+    if (fallbackSrc) {
+      return (
+        <div className="relative w-full h-full overflow-hidden">
+          <img
+            src={fallbackSrc}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 z-10 font-heading">
+            <Video className="w-3 h-3 text-pink-400" />
+            <span>Video Memory</span>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <video
       ref={videoRef}
@@ -53,12 +74,7 @@ const GalleryVideoPlayer: React.FC<{
       playsInline
       preload="auto"
       onError={() => {
-        if (fallbackSrc && videoRef.current && videoRef.current.src !== fallbackSrc) {
-          videoRef.current.src = fallbackSrc;
-          videoRef.current.play().catch(() => setLoadError(true));
-        } else {
-          setLoadError(true);
-        }
+        setLoadError(true);
       }}
       className="w-full h-full object-cover pointer-events-auto"
     />

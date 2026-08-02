@@ -9,12 +9,22 @@ export function getDriveFileId(url: string): string | null {
   return match && match[1] ? match[1] : null;
 }
 
+export function getYouTubeEmbedUrl(url: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2] && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+}
+
 export function isVideoUrl(url: string, explicitIsVideo?: boolean): boolean {
   if (explicitIsVideo !== undefined) return explicitIsVideo;
   if (!url) return false;
 
   const clean = url.trim().toLowerCase();
   
+  // YouTube or Vimeo check
+  if (clean.includes('youtube.com') || clean.includes('youtu.be') || clean.includes('vimeo.com')) return true;
+
   // Extension check
   if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(clean)) return true;
 
@@ -60,8 +70,19 @@ export function formatMediaUrl(
   const trimmed = urlToUse.trim();
   const detectedVideo = isVideoUrl(trimmed, isVideo) || !!secondaryUrl;
   const driveId = getDriveFileId(trimmed);
+  const ytEmbed = getYouTubeEmbedUrl(trimmed);
 
   if (detectedVideo) {
+    if (ytEmbed) {
+      return {
+        type: 'video',
+        isDrive: true,
+        src: ytEmbed,
+        fallbackSrc: secondaryUrl ? formatImageUrl(secondaryUrl) : undefined,
+        iframeSrc: ytEmbed
+      };
+    }
+
     if (driveId) {
       return {
         type: 'video',
@@ -83,7 +104,7 @@ export function formatMediaUrl(
       if (secDriveId) {
         fallback = `https://lh3.googleusercontent.com/d/${secDriveId}`;
       } else {
-        fallback = secondaryUrl;
+        fallback = formatImageUrl(secondaryUrl);
       }
     }
 

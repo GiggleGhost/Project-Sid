@@ -124,7 +124,7 @@ export const Chapter2MemoryOrb: React.FC<Chapter2MemoryOrbProps> = ({ onComplete
           <div className="text-center space-y-3 z-30">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-[#FFB8D1] shadow-sm text-xs font-body text-[#E75480] font-medium">
               <Sparkles className="w-3.5 h-3.5 text-[#F7D27A]" />
-              Memory Counter: {Math.min(collectedIndex, photos.length)} / {photos.length} Photos
+              
             </div>
             
             <h2 className="font-title text-3xl sm:text-4xl text-[#E75480] block transition-all duration-500">
