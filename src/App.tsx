@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AmbientCanvas } from './components/AmbientCanvas';
 import { CustomCursor } from './components/CustomCursor';
 import { MusicPlayer } from './components/MusicPlayer';
@@ -131,6 +132,7 @@ export default function App() {
           </div>
         )}
       </main>
+      <Analytics />
     </div>
   );
 }
