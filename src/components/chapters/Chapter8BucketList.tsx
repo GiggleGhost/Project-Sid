@@ -42,7 +42,7 @@ export const Chapter8BucketList: React.FC = () => {
           <span className="font-title text-3xl sm:text-4xl text-[#E75480] block">Chapter VIII</span>
           <h2 className="font-heading text-2xl sm:text-4xl font-semibold text-[#444444]">Our Future Bucket List</h2>
           <p className="font-body text-xs sm:text-sm text-[#888888] mt-2 flex items-center justify-center gap-1">
-            <Compass className="w-4 h-4 text-[#E75480]" /> Dream adventures for Siddikuna & Maha
+            <Compass className="w-4 h-4 text-[#E75480]" /> Dream adventures for Sid & Maha
           </p>
 
           {/* Progress Tracker */}

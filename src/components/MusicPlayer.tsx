@@ -178,7 +178,7 @@ export const MusicPlayer: React.FC = () => {
             <div className="text-center mb-4">
               <span className="font-title text-3xl text-[#E75480] block">Our Love Songs</span>
               <p className="text-xs text-[#666666] font-body mt-1">
-                Special smooth romantic music dedicated to Siddikuna & Maha ❤️
+                Special smooth romantic music dedicated to Sid & Maha ❤️
               </p>
             </div>
 
